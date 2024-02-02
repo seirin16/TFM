@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fronted.AnalisisActivity"
+    android:background="@drawable/bg4">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/my_secondary"
+        android:alpha=".3">
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="28dp">
+
+        <!-- Añadir una pantalla donde se viera todos los resultados de forma simplificada -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Resultados"
+            android:alpha=".7"
+            android:textStyle="bold">
+        </TextView>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Aquí puedes añadir los elementos que quieras mostrar en la pantalla de resultados -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="IP: 192.168.1.1"
+                    android:padding="8dp">
+                </TextView>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Vulnerabilidades: 3"
+                    android:padding="8dp">
+                </TextView>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Recomendaciones: Actualizar el sistema, cambiar la contraseña, usar un firewall"
+                    android:padding="8dp">
+                </TextView>
+
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Introducir el email y darle al botón lo más abajo posible -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="bottom">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="IP Address"
+                android:alpha=".7"
+                android:textStyle="bold">
+            </TextView>
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:contentDescription="Write your email">
+            </EditText>
+
+            <View
+                android:layout_width="wrap_content"
+                android:layout_height="15dp">
+            </View>
+
+            <!-- Añadir un CheckBox para elegir si ver el informe detallado o no -->
+            <CheckBox
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Informe detallado"
+                android:checked="false"
+                android:layout_gravity="center_horizontal"
+                android:id="@+id/checkBox">
+            </CheckBox>
+
+            <View
+                android:layout_width="wrap_content"
+                android:layout_height="15dp">
+            </View>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Realizar escaneo"
+                android:background="@drawable/boton_redondo">
+            </Button>
+
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <!-- Añadir un botón para generar el PDF -->
+                <ImageView
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_margin="12dp"
+                    android:background="@drawable/pdf2">
+                </ImageView>
+
+
+                <!-- Añadir un botón para compartir con otras aplicaciones -->
+                <ImageView
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_margin="12dp"
+                    android:background="@drawable/share">
+                </ImageView>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+
+
+
+</RelativeLayout>

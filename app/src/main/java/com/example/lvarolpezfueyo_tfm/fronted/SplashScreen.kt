@@ -28,10 +28,16 @@ class SplashScreen : AppCompatActivity() {
         //Despues de 2 segundos se muestra la pantalla de Login
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed({
-            val intent = Intent(this@SplashScreen, LoginActivity::class.java)
+            val intent = Intent(this@SplashScreen, AnalisisActivity::class.java)
             startActivity(intent)
 
         }, 2000)
 
     }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        // Dejar en blanco para evitar que el usuario vuelva a la pantalla anterior
+    }
+
 }
