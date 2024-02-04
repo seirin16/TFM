@@ -41,6 +41,7 @@
 
                 <!-- Aquí puedes añadir los elementos que quieras mostrar en la pantalla de resultados -->
                 <TextView
+                    android:id="@+id/resumeIP"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="IP: 192.168.1.1"
@@ -48,6 +49,7 @@
                 </TextView>
 
                 <TextView
+                    android:id="@+id/openPorts"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Vulnerabilidades: 3"
@@ -55,6 +57,7 @@
                 </TextView>
 
                 <TextView
+                    android:id="@+id/scanResults"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Recomendaciones: Actualizar el sistema, cambiar la contraseña, usar un firewall"
@@ -80,6 +83,7 @@
             </TextView>
 
             <EditText
+                android:id="@+id/editTextIP"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="text"
@@ -106,12 +110,23 @@
                 android:layout_height="15dp">
             </View>
 
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:visibility="gone">
+            </ProgressBar>
+
+
             <Button
+                android:id="@+id/scanButton"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:text="Realizar escaneo"
                 android:background="@drawable/boton_redondo">
             </Button>
+
 
 
 
