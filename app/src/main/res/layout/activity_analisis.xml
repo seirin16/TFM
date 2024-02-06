@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".fronted.AnalisisActivity"
-    android:background="@drawable/bg4">
+    >
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -26,7 +26,8 @@
             android:layout_height="wrap_content"
             android:text="Resultados"
             android:alpha=".7"
-            android:textStyle="bold">
+            android:textStyle="bold"
+            >
         </TextView>
 
         <ScrollView
@@ -37,7 +38,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:background="@drawable/border">
 
                 <!-- Aquí puedes añadir los elementos que quieras mostrar en la pantalla de resultados -->
                 <TextView
@@ -45,23 +47,26 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="IP: 192.168.1.1"
-                    android:padding="8dp">
+                    android:padding="8dp"
+                    android:background="@drawable/border">
                 </TextView>
 
                 <TextView
                     android:id="@+id/openPorts"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Vulnerabilidades: 3"
-                    android:padding="8dp">
+                    android:text="Nº puertos abiertos: 3"
+                    android:padding="8dp"
+                    android:background="@drawable/border">
                 </TextView>
 
                 <TextView
                     android:id="@+id/scanResults"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Recomendaciones: Actualizar el sistema, cambiar la contraseña, usar un firewall"
-                    android:padding="8dp">
+                    android:text="Este espacio mostrará los puertos abiertos detectados después de realizar el escaneo de puertos"
+                    android:padding="8dp"
+                    android:background="@drawable/border">
                 </TextView>
 
             </LinearLayout>
