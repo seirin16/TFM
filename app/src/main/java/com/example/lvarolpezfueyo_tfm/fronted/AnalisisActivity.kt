@@ -51,20 +51,21 @@ class AnalisisActivity : AppCompatActivity() {
     }
 
     private fun scanPorts(ip: String) {
+        // Verifica si la dirección IP es válida
         if (!isValidIP(ip)) {
-
-            textViewResult.text = "Direccion IP no valida"
+            textViewResult.text = "Dirección IP no válida"
             return
-
         } else {
             val client = OkHttpClient()
 
+            // Construye la URL para escanear los puertos en la dirección IP especificada
             val url = "http://192.168.0.12:3000/scan/$ip"
 
             val request = Request.Builder()
                 .url(url)
                 .build()
 
+            // Realiza una llamada asíncrona para obtener la respuesta del servidor
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: okhttp3.Call, e: IOException) {
                     e.printStackTrace()
@@ -77,13 +78,15 @@ class AnalisisActivity : AppCompatActivity() {
                 @Throws(IOException::class)
                 override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
                     response.use {
-                        if (!response.isSuccessful) throw IOException("Unexpected code $response")
+                        // Si la respuesta no es exitosa, lanza una excepción
+                        if (!response.isSuccessful) throw IOException("Código inesperado $response")
 
                         val responseBody = response.body
                         if (responseBody != null) {
                             val myResponse = responseBody.string()
                             val formattedResponse = formatNmapOutput(myResponse)
 
+                            // Actualiza la interfaz de usuario con la respuesta formateada
                             this@AnalisisActivity.runOnUiThread {
                                 textViewResult.text = if (checkBox.isChecked) myResponse else formattedResponse
                                 progressBar.visibility = View.GONE
@@ -91,11 +94,9 @@ class AnalisisActivity : AppCompatActivity() {
                         }
                     }
                 }
-
             })
         }
     }
-
     private fun formatNmapOutput(nmapOutput: String): String {
         val lines = nmapOutput.lines()
         val stringBuilder = StringBuilder()
