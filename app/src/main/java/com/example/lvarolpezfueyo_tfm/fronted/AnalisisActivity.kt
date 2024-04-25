@@ -59,7 +59,7 @@ class AnalisisActivity : AppCompatActivity() {
             val client = OkHttpClient()
 
             // Construye la URL para escanear los puertos en la dirección IP especificada
-            val url = "http://192.168.0.12:3000/scan/$ip"
+            val url = "http://192.168.0.12:3000/scan/$ip?format=${checkBox.isChecked}"
 
             val request = Request.Builder()
                 .url(url)
@@ -84,11 +84,10 @@ class AnalisisActivity : AppCompatActivity() {
                         val responseBody = response.body
                         if (responseBody != null) {
                             val myResponse = responseBody.string()
-                            val formattedResponse = formatNmapOutput(myResponse)
 
-                            // Actualiza la interfaz de usuario con la respuesta formateada
+                            // Actualiza la interfaz de usuario con la respuesta formateada o sin formato
                             this@AnalisisActivity.runOnUiThread {
-                                textViewResult.text = if (checkBox.isChecked) myResponse else formattedResponse
+                                textViewResult.text = myResponse
                                 progressBar.visibility = View.GONE
                             }
                         }
@@ -96,32 +95,6 @@ class AnalisisActivity : AppCompatActivity() {
                 }
             })
         }
-    }
-    private fun formatNmapOutput(nmapOutput: String): String {
-        val lines = nmapOutput.lines()
-        val stringBuilder = StringBuilder()
-
-        // Agregamos los encabezados
-        stringBuilder.append("PORT\tSTATE\tSERVICE\n")
-
-        for (line in lines) {
-            // Utilizamos una expresión regular para identificar las líneas con la información de los puertos
-            if (line.matches(Regex("^\\d+/[tcpudp]+\\s+\\S+\\s+\\S+"))) {
-                // Separamos la línea por espacios mientras ignoramos múltiples espacios en blanco consecutivos
-                val parts = line.split("\\s+".toRegex())
-                if (parts.size >= 3) {
-                    val portInfo = parts[0] // Contiene el número de puerto y el protocolo
-                    val state = parts[1]    // Contiene el estado del puerto
-                    val service = parts[2]  // Contiene el nombre del servicio
-
-                    // Añadimos la información al StringBuilder
-                    stringBuilder.append("$portInfo\t$state\t$service\n")
-                }
-            }
-        }
-
-        // Devolvemos la cadena formateada
-        return stringBuilder.toString()
     }
 
     private fun isValidIP(ip: String): Boolean {
