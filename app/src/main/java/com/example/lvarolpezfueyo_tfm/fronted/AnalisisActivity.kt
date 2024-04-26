@@ -13,7 +13,9 @@ import java.io.IOException
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Callback
+import org.json.JSONObject
 import java.net.InetAddress
+import java.util.concurrent.TimeUnit
 
 
 class AnalisisActivity : AppCompatActivity() {
@@ -45,7 +47,6 @@ class AnalisisActivity : AppCompatActivity() {
             textViewResult.text = "";
 
             val ip = editTextIp.text.toString()
-            progressBar.visibility = View.VISIBLE
             scanPorts(ip)
         }
     }
@@ -56,10 +57,18 @@ class AnalisisActivity : AppCompatActivity() {
             textViewResult.text = "Dirección IP no válida"
             return
         } else {
-            val client = OkHttpClient()
+            progressBar.visibility = View.VISIBLE
+            val client = OkHttpClient.Builder()
+                .connectTimeout(
+                    10,
+                    TimeUnit.SECONDS
+                ) // Tiempo de espera para establecer la conexión
+                .writeTimeout(10, TimeUnit.SECONDS) // Tiempo de espera para enviar la solicitud
+                .readTimeout(30, TimeUnit.SECONDS) // Tiempo de espera para recibir la respuesta
+                .build()
 
-            // Construye la URL para escanear los puertos en la dirección IP especificada
-            val url = "http://192.168.0.12:3000/scan/$ip?format=${checkBox.isChecked}"
+            val format = if (checkBox.isChecked) "false" else "true"
+            val url = "http://192.168.0.12:3000/scan/$ip/$format"
 
             val request = Request.Builder()
                 .url(url)
@@ -81,13 +90,25 @@ class AnalisisActivity : AppCompatActivity() {
                         // Si la respuesta no es exitosa, lanza una excepción
                         if (!response.isSuccessful) throw IOException("Código inesperado $response")
 
-                        val responseBody = response.body
+                        val responseBody = response.body!!.string()
                         if (responseBody != null) {
-                            val myResponse = responseBody.string()
+                            val json = JSONObject(responseBody)
+
+                            val myResponse = if (!checkBox.isChecked) {
+                                json.getString("formattedOutput")
+                            } else {
+                                json.getString("stdout")
+                            }
+
+
+                            val openPortsJson = json.getJSONArray("openPorts")
+                            val numOpenPorts = openPortsJson.length()
+
 
                             // Actualiza la interfaz de usuario con la respuesta formateada o sin formato
                             this@AnalisisActivity.runOnUiThread {
                                 textViewResult.text = myResponse
+                                openPorts.text = "Nº puertos abiertos: ${numOpenPorts.toString()}"
                                 progressBar.visibility = View.GONE
                             }
                         }
@@ -96,6 +117,7 @@ class AnalisisActivity : AppCompatActivity() {
             })
         }
     }
+
 
     private fun isValidIP(ip: String): Boolean {
         return try {
