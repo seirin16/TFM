@@ -1,21 +1,30 @@
 package com.example.lvarolpezfueyo_tfm.fronted
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import com.example.lvarolpezfueyo_tfm.R
+import com.itextpdf.kernel.pdf.PdfWriter
 import java.io.IOException
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Callback
 import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
 import java.net.InetAddress
 import java.util.concurrent.TimeUnit
+import com.itextpdf.layout.Document
+import com.itextpdf.layout.element.Paragraph
 
 
 class AnalisisActivity : AppCompatActivity() {
@@ -27,6 +36,8 @@ class AnalisisActivity : AppCompatActivity() {
     private lateinit var textViewResult: TextView
     private lateinit var checkBox: CheckBox
     private lateinit var progressBar: ProgressBar
+    private lateinit var generatePDF: ImageView
+    private lateinit var share: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,13 +53,27 @@ class AnalisisActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
 
         buttonScan.setOnClickListener {
+            generatePDF.isEnabled = false
+            share.isEnabled = false
 
-            resumeIP.text = editTextIp.text;
-            textViewResult.text = "";
+            resumeIP.text = "IP: ${editTextIp.text}";
+            textViewResult.text = "Escaneando, los resultados aparecerán aquí";
 
             val ip = editTextIp.text.toString()
             scanPorts(ip)
         }
+
+        generatePDF = findViewById(R.id.PDF);
+        share = findViewById(R.id.Share);
+
+        generatePDF.setOnClickListener {
+            generatePdf()
+        }
+
+        share.setOnClickListener {
+            shareText()
+        }
+
     }
 
     private fun scanPorts(ip: String) {
@@ -93,29 +118,76 @@ class AnalisisActivity : AppCompatActivity() {
                         val responseBody = response.body!!.string()
                         if (responseBody != null) {
                             val json = JSONObject(responseBody)
-
                             val myResponse = if (!checkBox.isChecked) {
                                 json.getString("formattedOutput")
                             } else {
                                 json.getString("stdout")
                             }
-
-
                             val openPortsJson = json.getJSONArray("openPorts")
                             val numOpenPorts = openPortsJson.length()
 
-
-                            // Actualiza la interfaz de usuario con la respuesta formateada o sin formato
                             this@AnalisisActivity.runOnUiThread {
                                 textViewResult.text = myResponse
                                 openPorts.text = "Nº puertos abiertos: ${numOpenPorts.toString()}"
                                 progressBar.visibility = View.GONE
+                                generatePDF.isEnabled = true
+                                share.isEnabled = true
                             }
                         }
                     }
                 }
             })
         }
+    }
+
+    fun generatePdf() {
+        try {
+            val directory =
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+
+            val file = File(directory, "scan.pdf")
+            val outputStream = FileOutputStream(file)
+            val writer = PdfWriter(outputStream)
+
+            // Crear un objeto PdfDocument para crear el PDF
+            val pdf = com.itextpdf.kernel.pdf.PdfDocument(writer)
+
+            // Crear un objeto Document para agregar contenido al PDF
+            val document = Document(pdf)
+
+
+            // Agregar el contenido del TextView al PDF
+
+            val ip = editTextIp.text.toString()
+            val numOpenPorts = openPorts.text.toString()
+            val text = textViewResult.text.toString()
+
+            val ipParagraph = Paragraph("Dirección IP: $ip")
+            val numOpenPortsParagraph = Paragraph(numOpenPorts)
+            val paragraph = Paragraph(text)
+
+            document.add(ipParagraph)
+            document.add(numOpenPortsParagraph)
+            document.add(paragraph)
+
+            document.close()
+            pdf.close()
+            Toast.makeText(
+                this,
+                "PDF generado, guardado en Mis archivos->Descargas",
+                Toast.LENGTH_SHORT
+            ).show()
+        } catch (e: Exception) {
+            // Mostrar un mensaje Toast indicando que se ha producido un error al generar el PDF
+            Toast.makeText(this, "Error generando el PDF", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun shareText() {
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "text/plain"
+        intent.putExtra(Intent.EXTRA_TEXT, textViewResult.text.toString())
+        startActivity(Intent.createChooser(intent, "Compartir con:"))
     }
 
 

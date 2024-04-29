@@ -143,6 +143,7 @@
 
                 <!-- Añadir un botón para generar el PDF -->
                 <ImageView
+                    android:id="@+id/PDF"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:layout_margin="12dp"
@@ -152,6 +153,7 @@
 
                 <!-- Añadir un botón para compartir con otras aplicaciones -->
                 <ImageView
+                    android:id="@+id/Share"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:layout_margin="12dp"

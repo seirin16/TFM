@@ -74,4 +74,7 @@ dependencies {
     implementation ("com.android.volley:volley:1.2.1")
     implementation ("com.squareup.okhttp3:okhttp:4.9.0")
 
+    implementation ("com.itextpdf:itext7-core:8.0.3")
+
+
 }
