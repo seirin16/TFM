@@ -93,7 +93,8 @@ class AnalisisActivity : AppCompatActivity() {
                 .build()
 
             val format = if (checkBox.isChecked) "false" else "true"
-            val url = "http://192.168.0.12:3000/scan/$ip/$format"
+            val url = "https://tfm-fkng5higzq-ew.a.run.app/scan/$ip/$format"
+
 
             val request = Request.Builder()
                 .url(url)
