@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">ÁlvaroLópezFueyo-TFM</string>
     <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_nikto">NiktoActivity</string>
 </resources>

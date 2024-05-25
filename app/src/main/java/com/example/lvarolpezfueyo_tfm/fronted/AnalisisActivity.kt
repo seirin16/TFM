@@ -93,16 +93,18 @@ class AnalisisActivity : AppCompatActivity() {
             progressBar.visibility = View.VISIBLE
             val client = OkHttpClient.Builder()
                 .connectTimeout(
-                    10,
+                    60,
                     TimeUnit.SECONDS
                 ) // Tiempo de espera para establecer la conexión
-                .writeTimeout(10, TimeUnit.SECONDS) // Tiempo de espera para enviar la solicitud
-                .readTimeout(30, TimeUnit.SECONDS) // Tiempo de espera para recibir la respuesta
+                .writeTimeout(60, TimeUnit.SECONDS) // Tiempo de espera para enviar la solicitud
+                .readTimeout(60, TimeUnit.SECONDS) // Tiempo de espera para recibir la respuesta
                 .build()
 
             val format = if (checkBox.isChecked) "false" else "true"
             //val url = "https://tfm-fkng5higzq-ew.a.run.app/scan/$ip/$format"
             val url = "http://192.168.0.12:3000/scan/$ip/$format"
+
+
 
 
             val request = Request.Builder()
@@ -148,9 +150,9 @@ class AnalisisActivity : AppCompatActivity() {
                                 // Obtener la lista de puertos abiertos
                                 val openPortsList = mutableListOf<Int>()
                                 for (i in 0 until numOpenPorts) {
-                                    val portJson = openPortsJson.getJSONObject(i)
-                                    val port = portJson.getInt("port")
+                                    val port = openPortsJson.getString(i).toInt()
                                     openPortsList.add(port)
+
                                 }
 
                                 // Establecer los puertos clicables
@@ -168,33 +170,39 @@ class AnalisisActivity : AppCompatActivity() {
     fun setClickablePorts(nmapOutput: String, clickablePorts: List<Int>): SpannableString {
         val spannableString = SpannableString(nmapOutput)
 
-        val portClickableSpan = object : ClickableSpan() {
-            override fun onClick(view: View) {
-                val port = getPortFromClick(view) // Obtener el puerto seleccionado por el usuario
-                if (port != null) {
-                    // Aquí puedes agregar la lógica para mostrar la información del puerto seleccionado
-                    Toast.makeText(view.context, "Puerto seleccionado: $port", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            override fun updateDrawState(ds: TextPaint) {
-                super.updateDrawState(ds)
-                ds.isUnderlineText = false
-            }
-        }
-
         for (clickablePort in clickablePorts) {
             val portString = "$clickablePort/tcp"
-            val startIndex = nmapOutput.indexOf(portString)
+            var startIndex = 0
 
-            if (startIndex != -1) {
-                val endIndex = startIndex + portString.length
-                spannableString.setSpan(portClickableSpan, startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            while (startIndex != -1) {
+                startIndex = nmapOutput.indexOf(portString, startIndex)
+
+                if (startIndex != -1) {
+                    val endIndex = startIndex + portString.length
+
+                    val portClickableSpan = object : ClickableSpan() {
+                        override fun onClick(view: View) {
+                            // Aquí puedes agregar la lógica para mostrar la información del puerto seleccionado
+                            Toast.makeText(view.context, "Puerto seleccionado: $clickablePort", Toast.LENGTH_SHORT).show()
+                        }
+
+                        override fun updateDrawState(ds: TextPaint) {
+                            super.updateDrawState(ds)
+                            ds.isUnderlineText = false
+                        }
+                    }
+
+                    spannableString.setSpan(portClickableSpan, startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+                    // Incrementar startIndex para que la siguiente búsqueda comience después del final del enlace clicable actual
+                    startIndex += endIndex
+                }
             }
         }
 
         return spannableString
     }
+
 
     fun getPortFromClick(view: View): Int? {
         val text = (view as TextView).text
