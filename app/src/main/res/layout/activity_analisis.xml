@@ -122,7 +122,7 @@
 
             <View
                 android:layout_width="wrap_content"
-                android:layout_height="15dp">
+                android:layout_height="7.5dp">
             </View>
 
             <ProgressBar
@@ -132,6 +132,11 @@
                 android:layout_gravity="center_horizontal"
                 android:visibility="gone">
             </ProgressBar>
+
+            <View
+                android:layout_width="wrap_content"
+                android:layout_height="7.5dp">
+            </View>
 
 
             <Button

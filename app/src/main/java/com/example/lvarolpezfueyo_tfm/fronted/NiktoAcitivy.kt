@@ -21,6 +21,7 @@ class NiktoAcitivy : AppCompatActivity() {
     private lateinit var resumeIP: TextView
     private lateinit var portToScan: TextView
     private lateinit var scanResult: TextView
+    private lateinit var progressBar: ProgressBar
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nikto_acitivy)
@@ -28,6 +29,8 @@ class NiktoAcitivy : AppCompatActivity() {
         resumeIP = findViewById(R.id.resumeIP)
         portToScan = findViewById(R.id.portToScan)
         scanResult = findViewById(R.id.scanResults)
+        progressBar = findViewById(R.id.progressBar)
+
 
         val extras = intent.extras
         val ip = extras?.getString("ip")
@@ -38,6 +41,7 @@ class NiktoAcitivy : AppCompatActivity() {
         portToScan.text = "Puerto seleccionado: $port"
 
         if (ip != null && port!=null) {
+            progressBar.visibility = View.VISIBLE
             scanPort(ip, port)
         }else{
             scanResult.text = "Error a la hora de recibir los parametros"
@@ -83,6 +87,7 @@ class NiktoAcitivy : AppCompatActivity() {
 
                         this@NiktoAcitivy.runOnUiThread {
                             scanResult.text = myResponse
+                            progressBar.visibility = View.GONE
 
                         }
 

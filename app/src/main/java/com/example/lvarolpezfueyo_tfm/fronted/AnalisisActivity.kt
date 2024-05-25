@@ -128,11 +128,7 @@ class AnalisisActivity : AppCompatActivity() {
                         val responseBody = response.body!!.string()
                         if (responseBody != null) {
                             val json = JSONObject(responseBody)
-                            val myResponse = if (!checkBox.isChecked) {
-                                json.getString("formattedOutput")
-                            } else {
-                                json.getString("stdout")
-                            }
+                            val myResponse = json.getString("stdout")
                             val openPortsJson = json.getJSONArray("openPorts")
                             val numOpenPorts = openPortsJson.length()
 
@@ -214,8 +210,6 @@ class AnalisisActivity : AppCompatActivity() {
         return spannableString
     }
 
-
-
     fun generatePdf() {
         try {
             val directory =
@@ -265,6 +259,11 @@ class AnalisisActivity : AppCompatActivity() {
         } catch (e: Exception) {
             false
         }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        // Dejar en blanco para evitar que el usuario vuelva a la pantalla anterior
     }
 
 }
