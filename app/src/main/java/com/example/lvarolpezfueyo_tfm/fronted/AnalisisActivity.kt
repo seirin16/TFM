@@ -105,8 +105,6 @@ class AnalisisActivity : AppCompatActivity() {
             val url = "http://192.168.0.12:3000/scan/$ip/$format"
 
 
-
-
             val request = Request.Builder()
                 .url(url)
                 .build()
@@ -167,6 +165,7 @@ class AnalisisActivity : AppCompatActivity() {
             })
         }
     }
+
     fun setClickablePorts(nmapOutput: String, clickablePorts: List<Int>): SpannableString {
         val spannableString = SpannableString(nmapOutput)
 
@@ -183,7 +182,16 @@ class AnalisisActivity : AppCompatActivity() {
                     val portClickableSpan = object : ClickableSpan() {
                         override fun onClick(view: View) {
                             // Aquí puedes agregar la lógica para mostrar la información del puerto seleccionado
-                            Toast.makeText(view.context, "Puerto seleccionado: $clickablePort", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                view.context,
+                                "Puerto seleccionado: $clickablePort",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                            val intent = Intent(this@AnalisisActivity, NiktoAcitivy::class.java)
+                            intent.putExtra("ip", editTextIp.text)
+                            intent.putExtra("port", clickablePort)
+                            startActivity(intent)
                         }
 
                         override fun updateDrawState(ds: TextPaint) {
@@ -192,7 +200,12 @@ class AnalisisActivity : AppCompatActivity() {
                         }
                     }
 
-                    spannableString.setSpan(portClickableSpan, startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    spannableString.setSpan(
+                        portClickableSpan,
+                        startIndex,
+                        endIndex,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
 
                     // Incrementar startIndex para que la siguiente búsqueda comience después del final del enlace clicable actual
                     startIndex += endIndex
@@ -201,27 +214,6 @@ class AnalisisActivity : AppCompatActivity() {
         }
 
         return spannableString
-    }
-
-
-    fun getPortFromClick(view: View): Int? {
-        val text = (view as TextView).text
-        val start = view.getOffsetForPosition(view.x, view.y)
-        val end = start + 1
-
-        val portRegex = "(\\d+/tcp)".toRegex()
-        val portMatch = portRegex.find(text.subSequence(start, end))
-
-        if (portMatch != null) {
-            val portString = portMatch.groupValues[1]
-            val port = portString.toIntOrNull()
-
-            if (port != null) {
-                return port
-            }
-        }
-
-        return null
     }
 
 

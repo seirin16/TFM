@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fronted.NiktoAcitivy"
+    android:theme="@style/AppTheme"
+    android:background="@color/my_third">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/my_secondary"
+        android:alpha=".3">
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="28dp">
+
+        <!-- Añadir una pantalla donde se viera todos los resultados de forma simplificada -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:text="Resultado"
+            android:alpha=".7"
+            android:textStyle="bold"
+            >
+        </TextView>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/border"
+                >
+
+                <!-- Aquí puedes añadir los elementos que quieras mostrar en la pantalla de resultados -->
+                <TextView
+                    android:id="@+id/resumeIP"
+                    android:textColor="@color/white"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="IP: 192.168.1.1"
+                    android:padding="8dp"
+                    >
+                </TextView>
+
+                <TextView
+                    android:id="@+id/portToScan"
+                    android:textColor="@color/white"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Puerto que se va a escanear: 80"
+                    android:padding="8dp"
+                    >
+                </TextView>
+
+                <TextView
+                    android:id="@+id/scanResults"
+                    android:textColor="@color/white"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Este espacio mostrará la salida de nikto una vez haya finalizado el escaneo."
+                    android:padding="8dp"
+                    >
+                </TextView>
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:visibility="gone">
+                </ProgressBar>
+
+
+            </LinearLayout>
+        </ScrollView>
+
+
+
+    </LinearLayout>
+
+
+
+
+</RelativeLayout>
