@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:theme="@style/AppTheme"
+    android:background="@color/my_third"
     tools:context=".fronted.AnalisisActivity"
     >
 
@@ -24,6 +26,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/white"
             android:text="Resultados"
             android:alpha=".7"
             android:textStyle="bold"
@@ -39,11 +42,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="@drawable/border">
+                android:background="@drawable/border"
+                >
 
                 <!-- Aquí puedes añadir los elementos que quieras mostrar en la pantalla de resultados -->
                 <TextView
                     android:id="@+id/resumeIP"
+                    android:textColor="@color/white"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="IP: 192.168.1.1"
@@ -53,6 +58,7 @@
 
                 <TextView
                     android:id="@+id/openPorts"
+                    android:textColor="@color/white"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Nº puertos abiertos: 3"
@@ -62,6 +68,7 @@
 
                 <TextView
                     android:id="@+id/scanResults"
+                    android:textColor="@color/white"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Este espacio mostrará los puertos abiertos detectados después de realizar el escaneo de puertos"
@@ -82,6 +89,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/white"
                 android:text="IP Address"
                 android:alpha=".7"
                 android:textStyle="bold">
@@ -92,6 +100,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="text"
+                android:textColor="@color/white"
                 android:contentDescription="Write your email">
             </EditText>
 
@@ -104,6 +113,7 @@
             <CheckBox
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/white"
                 android:text="Informe detallado"
                 android:checked="false"
                 android:layout_gravity="center_horizontal"
@@ -128,6 +138,7 @@
                 android:id="@+id/scanButton"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
+                android:textColor="@color/white"
                 android:text="Realizar escaneo"
                 android:background="@drawable/boton_redondo">
             </Button>

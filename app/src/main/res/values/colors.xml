@@ -11,6 +11,7 @@
     <color name="blue">#88BEF5</color>
     <color name="my_primary">#062471</color>
     <color name="my_secondary">#043465</color>
+    <color name="my_third">#263238</color>
 
 
 </resources>
