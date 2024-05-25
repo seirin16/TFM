@@ -34,8 +34,8 @@ class NiktoAcitivy : AppCompatActivity() {
         val port = extras?.getInt("port")
 
         // Actualizar los valores de los TextViews
-        resumeIP.text = ip
-        portToScan.text = port.toString()
+        resumeIP.text = "IP: $ip"
+        portToScan.text = "Puerto seleccionado: $port"
 
         if (ip != null && port!=null) {
             scanPort(ip, port)
@@ -49,14 +49,14 @@ class NiktoAcitivy : AppCompatActivity() {
 
         val client = OkHttpClient.Builder()
             .connectTimeout(
-                60,
+                120,
                 TimeUnit.SECONDS
             ) // Tiempo de espera para establecer la conexión
-            .writeTimeout(60, TimeUnit.SECONDS) // Tiempo de espera para enviar la solicitud
-            .readTimeout(60, TimeUnit.SECONDS) // Tiempo de espera para recibir la respuesta
+            .writeTimeout(120, TimeUnit.SECONDS) // Tiempo de espera para enviar la solicitud
+            .readTimeout(120, TimeUnit.SECONDS) // Tiempo de espera para recibir la respuesta
             .build()
 
-        val url = "http://192.168.0.12:3000//nikto/$ip/$port"
+        val url = "http://192.168.0.12:3000/nikto/$ip/$port"
 
 
         val request = Request.Builder()
@@ -75,7 +75,18 @@ class NiktoAcitivy : AppCompatActivity() {
             @Throws(IOException::class)
             override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
                 response.use {
+                    if (!response.isSuccessful) throw IOException("Código inesperado $response")
+                    val responseBody = response.body!!.string()
+                    if (responseBody != null) {
+                        val json = JSONObject(responseBody)
+                        val myResponse = json.getString("niktoOutput")
 
+                        this@NiktoAcitivy.runOnUiThread {
+                            scanResult.text = myResponse
+
+                        }
+
+                    }
                 }
             }
         })

@@ -136,8 +136,6 @@ class AnalisisActivity : AppCompatActivity() {
                             val openPortsJson = json.getJSONArray("openPorts")
                             val numOpenPorts = openPortsJson.length()
 
-                            Log.d("AnalisisActivity", "numOpenPorts: $numOpenPorts")
-
                             this@AnalisisActivity.runOnUiThread {
                                 textViewResult.text = myResponse
                                 openPorts.text = "Nº puertos abiertos: ${numOpenPorts.toString()}"
@@ -189,7 +187,7 @@ class AnalisisActivity : AppCompatActivity() {
                             ).show()
 
                             val intent = Intent(this@AnalisisActivity, NiktoAcitivy::class.java)
-                            intent.putExtra("ip", editTextIp.text)
+                            intent.putExtra("ip",  editTextIp.text.toString())
                             intent.putExtra("port", clickablePort)
                             startActivity(intent)
                         }
