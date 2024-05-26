@@ -2,7 +2,6 @@ package com.example.lvarolpezfueyo_tfm.fronted
 
 import android.content.Intent
 import android.graphics.Color
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.text.SpannableString
@@ -19,19 +18,23 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import com.example.lvarolpezfueyo_tfm.R
 import com.itextpdf.kernel.pdf.PdfWriter
-import java.io.IOException
+import com.itextpdf.layout.Document
+import com.itextpdf.layout.element.Paragraph
+import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Callback
 import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.net.InetAddress
 import java.util.concurrent.TimeUnit
-import com.itextpdf.layout.Document
-import com.itextpdf.layout.element.Paragraph
 
 
 class AnalisisActivity : AppCompatActivity() {
@@ -45,6 +48,17 @@ class AnalisisActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var generatePDF: ImageView
     private lateinit var share: ImageView
+    private val niktoResult = mutableMapOf<Int?, Pair<String?, String?>>()
+    private var resultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val ip = result.data?.getStringExtra("ip")
+                val port = result.data?.getIntExtra("port", 0)
+                val niktoScan = result.data?.getStringExtra("scan")
+                val ipAndScan = Pair(ip, niktoScan)
+                niktoResult[port] = ipAndScan
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,6 +81,11 @@ class AnalisisActivity : AppCompatActivity() {
             textViewResult.text = "Escaneando, los resultados aparecerán aquí";
 
             val ip = editTextIp.text.toString()
+
+            if (!niktoResult.values.any { it.first == ip }) {
+                niktoResult.clear()
+            }
+
             scanPorts(ip)
         }
 
@@ -91,6 +110,7 @@ class AnalisisActivity : AppCompatActivity() {
             return
         } else {
             progressBar.visibility = View.VISIBLE
+
             val client = OkHttpClient.Builder()
                 .connectTimeout(
                     60,
@@ -164,28 +184,22 @@ class AnalisisActivity : AppCompatActivity() {
         val spannableString = SpannableString(nmapOutput)
 
         for (clickablePort in clickablePorts) {
-            val portString = "$clickablePort/tcp"
+            val tcpPortString = "$clickablePort/tcp"
+            val udpPortString = "$clickablePort/udp"
             var startIndex = 0
 
             while (startIndex != -1) {
-                startIndex = nmapOutput.indexOf(portString, startIndex)
+                startIndex = nmapOutput.indexOf(tcpPortString, startIndex)
+                if (startIndex == -1) {
+                    startIndex = nmapOutput.indexOf(udpPortString, startIndex)
+                }
 
                 if (startIndex != -1) {
-                    val endIndex = startIndex + portString.length
+                    val endIndex = startIndex + if (nmapOutput.startsWith(tcpPortString, startIndex)) tcpPortString.length else udpPortString.length
 
                     val portClickableSpan = object : ClickableSpan() {
                         override fun onClick(view: View) {
-                            // Aquí puedes agregar la lógica para mostrar la información del puerto seleccionado
-                            Toast.makeText(
-                                view.context,
-                                "Puerto seleccionado: $clickablePort",
-                                Toast.LENGTH_SHORT
-                            ).show()
-
-                            val intent = Intent(this@AnalisisActivity, NiktoAcitivy::class.java)
-                            intent.putExtra("ip",  editTextIp.text.toString())
-                            intent.putExtra("port", clickablePort)
-                            startActivity(intent)
+                            startNiktoActivity(clickablePort)
                         }
 
                         override fun updateDrawState(ds: TextPaint) {
@@ -201,7 +215,6 @@ class AnalisisActivity : AppCompatActivity() {
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
 
-                    // Incrementar startIndex para que la siguiente búsqueda comience después del final del enlace clicable actual
                     startIndex += endIndex
                 }
             }
@@ -217,17 +230,25 @@ class AnalisisActivity : AppCompatActivity() {
             val file = File(directory, "scan.pdf")
             val outputStream = FileOutputStream(file)
             val writer = PdfWriter(outputStream)
-            // Crear un objeto PdfDocument para crear el PDF
             val pdf = com.itextpdf.kernel.pdf.PdfDocument(writer)
-            // Crear un objeto Document para agregar contenido al PDF
             val document = Document(pdf)
-            // Agregar el contenido del TextView al PDF
             val ip = editTextIp.text.toString()
             val numOpenPorts = openPorts.text.toString()
             val text = textViewResult.text.toString()
             val ipParagraph = Paragraph("Dirección IP: $ip")
             val numOpenPortsParagraph = Paragraph(numOpenPorts)
             val paragraph = Paragraph(text)
+
+            /*
+            if (niktoResult.isNotEmpty()) {
+                for ((port, pair) in niktoResult) {
+                    val niktoScan = pair.second
+                    paragraph.add("\n $niktoScan \n")
+                }
+            }
+
+             */
+
             document.add(ipParagraph)
             document.add(numOpenPortsParagraph)
             document.add(paragraph)
@@ -239,6 +260,7 @@ class AnalisisActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
         } catch (e: Exception) {
+            e.printStackTrace()
             // Mostrar un mensaje Toast indicando que se ha producido un error al generar el PDF
             Toast.makeText(this, "Error generando el PDF", Toast.LENGTH_SHORT).show()
         }
@@ -259,6 +281,14 @@ class AnalisisActivity : AppCompatActivity() {
         } catch (e: Exception) {
             false
         }
+    }
+
+    private fun startNiktoActivity(clickablePort: Int) {
+        val intent = Intent(this@AnalisisActivity, NiktoAcitivy::class.java)
+        intent.putExtra("ip", editTextIp.text.toString())
+        intent.putExtra("port", clickablePort)
+        intent.putExtra("niktoScan", niktoResult[clickablePort]?.second)
+        resultLauncher.launch(intent)
     }
 
     @Deprecated("Deprecated in Java")

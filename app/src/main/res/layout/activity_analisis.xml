@@ -71,7 +71,7 @@
                     android:textColor="@color/white"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Este espacio mostrará los puertos abiertos detectados después de realizar el escaneo de puertos"
+                    android:text="Este espacio mostrará la salida después de realizar nmap. Una vez aparezaca el resultado se puede hacer clic sobre los puertos, esto hace que se realice otro escaneo más."
                     android:padding="8dp"
                     >
                 </TextView>

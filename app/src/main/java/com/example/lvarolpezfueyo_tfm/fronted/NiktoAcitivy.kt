@@ -1,9 +1,8 @@
 package com.example.lvarolpezfueyo_tfm.fronted
 
-import android.graphics.Color
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
@@ -22,6 +21,10 @@ class NiktoAcitivy : AppCompatActivity() {
     private lateinit var portToScan: TextView
     private lateinit var scanResult: TextView
     private lateinit var progressBar: ProgressBar
+    private var ip: String? = null
+    private var port: Int? = 0
+    private var sendInformation: Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nikto_acitivy)
@@ -33,18 +36,23 @@ class NiktoAcitivy : AppCompatActivity() {
 
 
         val extras = intent.extras
-        val ip = extras?.getString("ip")
-        val port = extras?.getInt("port")
+        ip = extras?.getString("ip")
+        port = extras?.getInt("port")
+        val niktoScan = extras?.getString("niktoScan")
+
 
         // Actualizar los valores de los TextViews
         resumeIP.text = "IP: $ip"
         portToScan.text = "Puerto seleccionado: $port"
 
-        if (ip != null && port!=null) {
+        if (niktoScan != null) {
+            scanResult.text = niktoScan
+        } else if (ip != null && port != null) {
             progressBar.visibility = View.VISIBLE
-            scanPort(ip, port)
-        }else{
+            scanPort(ip!!, port!!)
+        } else {
             scanResult.text = "Error a la hora de recibir los parametros"
+
         }
 
     }
@@ -72,7 +80,9 @@ class NiktoAcitivy : AppCompatActivity() {
             override fun onFailure(call: okhttp3.Call, e: IOException) {
                 e.printStackTrace()
                 this@NiktoAcitivy.runOnUiThread {
-                    scanResult.text = "Error: ${e.message}"
+                    scanResult.text =
+                        "Error: El tiempo de escaneo ha superado el tiempo máximo establecido (2 minutos) por lo que no se puede realizar"
+                    progressBar.visibility = View.GONE
                 }
             }
 
@@ -86,6 +96,7 @@ class NiktoAcitivy : AppCompatActivity() {
                         val myResponse = json.getString("niktoOutput")
 
                         this@NiktoAcitivy.runOnUiThread {
+                            sendInformation=true;
                             scanResult.text = myResponse
                             progressBar.visibility = View.GONE
 
@@ -97,4 +108,16 @@ class NiktoAcitivy : AppCompatActivity() {
         })
 
     }
+
+    override fun onBackPressed() {
+        if (sendInformation) {
+            intent.putExtra("ip", ip)
+            intent.putExtra("port", port)
+            intent.putExtra("scan", scanResult.text)
+            setResult(RESULT_OK, intent)
+        }
+
+        super.onBackPressed()
+    }
+
 }
