@@ -80,5 +80,6 @@ dependencies {
 
     implementation ("com.itextpdf:itext7-core:8.0.3")
 
+    implementation ("com.google.code.gson:gson:2.10")
 
 }

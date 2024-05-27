@@ -1,13 +1,10 @@
 package com.example.lvarolpezfueyo_tfm.fronted
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
-import android.os.Environment
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextPaint
-import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.util.Log
 import android.view.View
@@ -17,24 +14,18 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
-import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.lvarolpezfueyo_tfm.R
-import com.itextpdf.kernel.pdf.PdfWriter
-import com.itextpdf.layout.Document
-import com.itextpdf.layout.element.Paragraph
 import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.json.JSONObject
-import java.io.File
-import java.io.FileOutputStream
+import org.w3c.dom.Document
 import java.io.IOException
 import java.net.InetAddress
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
+import javax.xml.parsers.DocumentBuilderFactory
 
 
 class AnalisisActivity : AppCompatActivity() {
@@ -142,38 +133,66 @@ class AnalisisActivity : AppCompatActivity() {
                 @Throws(IOException::class)
                 override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
                     response.use {
-                        // Si la respuesta no es exitosa, lanza una excepción
-                        if (!response.isSuccessful) throw IOException("Código inesperado $response")
+                        try {
+                            if (!response.isSuccessful) throw IOException("Código inesperado $response")
+                            val responseBody = response.body!!.string()
+                            if (responseBody != null) {
+                                val xml = parseXml(responseBody)
+                                val scanResult= parseNmap(xml)
+                                val numOpenPorts = getNumPorts(xml)
 
-                        val responseBody = response.body!!.string()
-                        if (responseBody != null) {
-                            val json = JSONObject(responseBody)
-                            val myResponse = json.getString("stdout")
-                            val openPortsJson = json.getJSONArray("openPorts")
-                            val numOpenPorts = openPortsJson.length()
-
-                            this@AnalisisActivity.runOnUiThread {
-                                textViewResult.text = myResponse
-                                openPorts.text = "Nº puertos abiertos: ${numOpenPorts.toString()}"
-                                progressBar.visibility = View.GONE
-                                generatePDF.isEnabled = true
-                                share.isEnabled = true
-
-                                // Obtener la lista de puertos abiertos
-                                val openPortsList = mutableListOf<Int>()
-                                for (i in 0 until numOpenPorts) {
-                                    val port = openPortsJson.getString(i).toInt()
-                                    openPortsList.add(port)
-
+                                this@AnalisisActivity.runOnUiThread {
+                                    textViewResult.text = scanResult
+                                    openPorts.text = "Nº puertos abiertos: ${numOpenPorts.toString()}"
+                                    progressBar.visibility = View.GONE
+                                    generatePDF.isEnabled = true
+                                    share.isEnabled = true
                                 }
 
-                                // Establecer los puertos clicables
-                                val spannableString = setClickablePorts(myResponse, openPortsList)
-                                textViewResult.text = spannableString
-                                textViewResult.movementMethod = LinkMovementMethod.getInstance()
-                                textViewResult.highlightColor = Color.TRANSPARENT
+                            } else {
+
                             }
+
+                        } catch (e: IOException) {
+                            Log.e("OkHttp", "IOException: ${e.message}")
                         }
+
+
+                        /*
+                                                // Si la respuesta no es exitosa, lanza una excepción
+                                                if (!response.isSuccessful) throw IOException("Código inesperado $response")
+
+                                                val responseBody = response.body!!.string()
+                                                if (responseBody != null) {
+                                                    val json = JSONObject(responseBody)
+                                                    val myResponse = json.getString("stdout")
+                                                    val openPortsJson = json.getJSONArray("openPorts")
+                                                    val numOpenPorts = openPortsJson.length()
+
+                                                    this@AnalisisActivity.runOnUiThread {
+                                                        textViewResult.text = myResponse
+                                                        openPorts.text = "Nº puertos abiertos: ${numOpenPorts.toString()}"
+                                                        progressBar.visibility = View.GONE
+                                                        generatePDF.isEnabled = true
+                                                        share.isEnabled = true
+
+                                                        // Obtener la lista de puertos abiertos
+                                                        val openPortsList = mutableListOf<Int>()
+                                                        for (i in 0 until numOpenPorts) {
+                                                            val port = openPortsJson.getString(i).toInt()
+                                                            openPortsList.add(port)
+
+                                                        }
+
+                                                        // Establecer los puertos clicables
+                                                        val spannableString = setClickablePorts(myResponse, openPortsList)
+                                                        textViewResult.text = spannableString
+                                                        textViewResult.movementMethod = LinkMovementMethod.getInstance()
+                                                        textViewResult.highlightColor = Color.TRANSPARENT
+                                                    }
+                                                }
+
+                                                */
                     }
                 }
             })
@@ -195,7 +214,11 @@ class AnalisisActivity : AppCompatActivity() {
                 }
 
                 if (startIndex != -1) {
-                    val endIndex = startIndex + if (nmapOutput.startsWith(tcpPortString, startIndex)) tcpPortString.length else udpPortString.length
+                    val endIndex = startIndex + if (nmapOutput.startsWith(
+                            tcpPortString,
+                            startIndex
+                        )
+                    ) tcpPortString.length else udpPortString.length
 
                     val portClickableSpan = object : ClickableSpan() {
                         override fun onClick(view: View) {
@@ -224,46 +247,7 @@ class AnalisisActivity : AppCompatActivity() {
     }
 
     fun generatePdf() {
-        try {
-            val directory =
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-            val file = File(directory, "scan.pdf")
-            val outputStream = FileOutputStream(file)
-            val writer = PdfWriter(outputStream)
-            val pdf = com.itextpdf.kernel.pdf.PdfDocument(writer)
-            val document = Document(pdf)
-            val ip = editTextIp.text.toString()
-            val numOpenPorts = openPorts.text.toString()
-            val text = textViewResult.text.toString()
-            val ipParagraph = Paragraph("Dirección IP: $ip")
-            val numOpenPortsParagraph = Paragraph(numOpenPorts)
-            val paragraph = Paragraph(text)
 
-            /*
-            if (niktoResult.isNotEmpty()) {
-                for ((port, pair) in niktoResult) {
-                    val niktoScan = pair.second
-                    paragraph.add("\n $niktoScan \n")
-                }
-            }
-
-             */
-
-            document.add(ipParagraph)
-            document.add(numOpenPortsParagraph)
-            document.add(paragraph)
-            document.close()
-            pdf.close()
-            Toast.makeText(
-                this,
-                "PDF generado, guardado en Mis archivos->Descargas",
-                Toast.LENGTH_SHORT
-            ).show()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            // Mostrar un mensaje Toast indicando que se ha producido un error al generar el PDF
-            Toast.makeText(this, "Error generando el PDF", Toast.LENGTH_SHORT).show()
-        }
     }
 
     private fun shareText() {
@@ -290,6 +274,73 @@ class AnalisisActivity : AppCompatActivity() {
         intent.putExtra("niktoScan", niktoResult[clickablePort]?.second)
         resultLauncher.launch(intent)
     }
+
+
+    fun parseXml(xmlContent: String): Document {
+        val factory = DocumentBuilderFactory.newInstance()
+        val builder = factory.newDocumentBuilder()
+
+        return builder.parse(xmlContent.byteInputStream(StandardCharsets.UTF_8))
+    }
+
+    fun parseNmap(doc: Document): String {
+        val sb = StringBuilder()
+        sb.append("Este es el resumen del escaneo\n\n")
+
+        val startTime = doc.getElementsByTagName("nmaprun")
+            .item(0).attributes.getNamedItem("startstr").nodeValue
+        sb.append("Hora de inicio del escaneo: $startTime\n\n")
+
+        val type =
+            doc.getElementsByTagName("scaninfo").item(0).attributes.getNamedItem("type").nodeValue
+        val protocol = doc.getElementsByTagName("scaninfo")
+            .item(0).attributes.getNamedItem("protocol").nodeValue
+        val numservices = doc.getElementsByTagName("scaninfo")
+            .item(0).attributes.getNamedItem("numservices").nodeValue
+        sb.append("Informacion del escaneo:\n")
+        sb.append("Tipo de escaneo que se realizó: $type\n")
+        sb.append("Protocolo de red utilizado: $protocol\n")
+        sb.append("Número de puertos escaneados: $numservices\n\n")
+
+        val state = doc.getElementsByTagName("extraports")
+            .item(0).attributes.getNamedItem("state").nodeValue
+        val numPortNotScan = doc.getElementsByTagName("extraports").item(0).attributes.getNamedItem(
+            "count"
+        ).nodeValue
+        val reason = doc.getElementsByTagName("extrareasons")
+            .item(0).attributes.getNamedItem("reason").nodeValue
+        sb.append("Informacion de los puertos no escaneados:\n")
+        sb.append("Número total de puertos: $numPortNotScan\n")
+        sb.append("Estado de los puertos: $state\n")
+        sb.append("Motivo: $reason\n\n")
+
+        sb.append("Informacion de los puertos escaneados:\n")
+        sb.append("PORT    STATE SERVICE\n")
+        for (i in 0 until doc.getElementsByTagName("port").length) {
+            val protocol = doc.getElementsByTagName("port")
+                .item(i).attributes.getNamedItem("protocol").nodeValue
+            val portid =
+                doc.getElementsByTagName("port").item(i).attributes.getNamedItem("portid").nodeValue
+            val state =
+                doc.getElementsByTagName("state").item(i).attributes.getNamedItem("state").nodeValue
+            val service = doc.getElementsByTagName("service")
+                .item(0).attributes.getNamedItem("name").nodeValue
+
+            sb.append("$portid/$protocol  $state  $service\n")
+        }
+        sb.append("\n")
+        val summary = doc.getElementsByTagName("finished")
+            .item(0).attributes.getNamedItem("summary").nodeValue
+        sb.append("Resumen de la ejecución: $summary\n")
+
+        return sb.toString()
+    }
+
+    fun getNumPorts(doc: Document): Int {
+
+        return doc.getElementsByTagName("port").length
+    }
+
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
