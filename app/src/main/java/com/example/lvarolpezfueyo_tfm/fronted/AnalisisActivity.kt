@@ -13,6 +13,7 @@ import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -30,9 +31,16 @@ import javax.xml.parsers.DocumentBuilderFactory
 
 class AnalisisActivity : AppCompatActivity() {
 
+    private lateinit var scrollView: ScrollView
+
+    private lateinit var generalInformation: TextView
+    private lateinit var startTime: TextView
+    private lateinit var scaninfo: TextView
+    private lateinit var extraports: TextView
+    private lateinit var port: TextView
+    private lateinit var finished: TextView
+
     private lateinit var editTextIp: EditText
-    private lateinit var resumeIP: TextView
-    private lateinit var openPorts: TextView
     private lateinit var buttonScan: Button
     private lateinit var textViewResult: TextView
     private lateinit var checkBox: CheckBox
@@ -55,21 +63,27 @@ class AnalisisActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_analisis)
 
-        editTextIp = findViewById(R.id.editTextIP)
-        resumeIP = findViewById(R.id.resumeIP)
-        openPorts = findViewById(R.id.openPorts)
 
+        generalInformation = findViewById(R.id.generalInformation)
+        editTextIp = findViewById(R.id.editTextIP)
         buttonScan = findViewById(R.id.scanButton)
         textViewResult = findViewById(R.id.scanResults)
         checkBox = findViewById(R.id.checkBox)
         progressBar = findViewById(R.id.progressBar)
 
+        scrollView = findViewById(R.id.scrollView)
+
+        startTime = findViewById(R.id.startTime)
+        scaninfo = findViewById(R.id.scaninfo)
+        extraports = findViewById(R.id.extraports)
+        port = findViewById(R.id.port)
+        finished = findViewById(R.id.finished)
+
         buttonScan.setOnClickListener {
             generatePDF.isEnabled = false
             share.isEnabled = false
 
-            resumeIP.text = "IP: ${editTextIp.text}";
-            textViewResult.text = "Escaneando, los resultados aparecerán aquí";
+            textViewResult.text = "Escaneando, los resultados aparecerán una vez finalice";
 
             val ip = editTextIp.text.toString()
 
@@ -97,7 +111,6 @@ class AnalisisActivity : AppCompatActivity() {
         // Verifica si la dirección IP es válida
         if (!isValidIP(ip)) {
             textViewResult.text = "Dirección IP no válida"
-            openPorts.text = "Nº puertos abiertos: 0"
             return
         } else {
             progressBar.visibility = View.VISIBLE
@@ -138,13 +151,18 @@ class AnalisisActivity : AppCompatActivity() {
                             val responseBody = response.body!!.string()
                             if (responseBody != null) {
                                 val xml = parseXml(responseBody)
-                                val scanResult= parseNmap(xml)
                                 val numOpenPorts = getNumPorts(xml)
 
                                 this@AnalisisActivity.runOnUiThread {
-                                    textViewResult.text = scanResult
-                                    openPorts.text = "Nº puertos abiertos: ${numOpenPorts.toString()}"
+                                    generalInformation(numOpenPorts)
+                                    startTime(xml)
+                                    scaninfo(xml)
+                                    extraports(xml)
+                                    information_port(xml)
+                                    information_finished(xml)
+                                    scrollView.visibility = View.VISIBLE
                                     progressBar.visibility = View.GONE
+                                    textViewResult.visibility = View.GONE
                                     generatePDF.isEnabled = true
                                     share.isEnabled = true
                                 }
@@ -157,94 +175,12 @@ class AnalisisActivity : AppCompatActivity() {
                             Log.e("OkHttp", "IOException: ${e.message}")
                         }
 
-
-                        /*
-                                                // Si la respuesta no es exitosa, lanza una excepción
-                                                if (!response.isSuccessful) throw IOException("Código inesperado $response")
-
-                                                val responseBody = response.body!!.string()
-                                                if (responseBody != null) {
-                                                    val json = JSONObject(responseBody)
-                                                    val myResponse = json.getString("stdout")
-                                                    val openPortsJson = json.getJSONArray("openPorts")
-                                                    val numOpenPorts = openPortsJson.length()
-
-                                                    this@AnalisisActivity.runOnUiThread {
-                                                        textViewResult.text = myResponse
-                                                        openPorts.text = "Nº puertos abiertos: ${numOpenPorts.toString()}"
-                                                        progressBar.visibility = View.GONE
-                                                        generatePDF.isEnabled = true
-                                                        share.isEnabled = true
-
-                                                        // Obtener la lista de puertos abiertos
-                                                        val openPortsList = mutableListOf<Int>()
-                                                        for (i in 0 until numOpenPorts) {
-                                                            val port = openPortsJson.getString(i).toInt()
-                                                            openPortsList.add(port)
-
-                                                        }
-
-                                                        // Establecer los puertos clicables
-                                                        val spannableString = setClickablePorts(myResponse, openPortsList)
-                                                        textViewResult.text = spannableString
-                                                        textViewResult.movementMethod = LinkMovementMethod.getInstance()
-                                                        textViewResult.highlightColor = Color.TRANSPARENT
-                                                    }
-                                                }
-
-                                                */
                     }
                 }
             })
         }
     }
 
-    fun setClickablePorts(nmapOutput: String, clickablePorts: List<Int>): SpannableString {
-        val spannableString = SpannableString(nmapOutput)
-
-        for (clickablePort in clickablePorts) {
-            val tcpPortString = "$clickablePort/tcp"
-            val udpPortString = "$clickablePort/udp"
-            var startIndex = 0
-
-            while (startIndex != -1) {
-                startIndex = nmapOutput.indexOf(tcpPortString, startIndex)
-                if (startIndex == -1) {
-                    startIndex = nmapOutput.indexOf(udpPortString, startIndex)
-                }
-
-                if (startIndex != -1) {
-                    val endIndex = startIndex + if (nmapOutput.startsWith(
-                            tcpPortString,
-                            startIndex
-                        )
-                    ) tcpPortString.length else udpPortString.length
-
-                    val portClickableSpan = object : ClickableSpan() {
-                        override fun onClick(view: View) {
-                            startNiktoActivity(clickablePort)
-                        }
-
-                        override fun updateDrawState(ds: TextPaint) {
-                            super.updateDrawState(ds)
-                            ds.isUnderlineText = false
-                        }
-                    }
-
-                    spannableString.setSpan(
-                        portClickableSpan,
-                        startIndex,
-                        endIndex,
-                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-
-                    startIndex += endIndex
-                }
-            }
-        }
-
-        return spannableString
-    }
 
     fun generatePdf() {
 
@@ -283,13 +219,27 @@ class AnalisisActivity : AppCompatActivity() {
         return builder.parse(xmlContent.byteInputStream(StandardCharsets.UTF_8))
     }
 
-    fun parseNmap(doc: Document): String {
+    fun generalInformation(numOpenPorts: Int) {
         val sb = StringBuilder()
-        sb.append("Este es el resumen del escaneo\n\n")
 
-        val startTime = doc.getElementsByTagName("nmaprun")
+        sb.append("IP: ${editTextIp.text}\n")
+        sb.append("Número de puertos abiertos: $numOpenPorts")
+
+        generalInformation.text = sb.toString();
+    }
+
+    fun startTime(doc: Document) {
+        val sb = StringBuilder()
+        val startstr = doc.getElementsByTagName("nmaprun")
             .item(0).attributes.getNamedItem("startstr").nodeValue
-        sb.append("Hora de inicio del escaneo: $startTime\n\n")
+
+        sb.append(startstr)
+
+        startTime.text = sb.toString();
+    }
+
+    fun scaninfo(doc: Document) {
+        val sb = StringBuilder()
 
         val type =
             doc.getElementsByTagName("scaninfo").item(0).attributes.getNamedItem("type").nodeValue
@@ -297,10 +247,15 @@ class AnalisisActivity : AppCompatActivity() {
             .item(0).attributes.getNamedItem("protocol").nodeValue
         val numservices = doc.getElementsByTagName("scaninfo")
             .item(0).attributes.getNamedItem("numservices").nodeValue
-        sb.append("Informacion del escaneo:\n")
         sb.append("Tipo de escaneo que se realizó: $type\n")
         sb.append("Protocolo de red utilizado: $protocol\n")
-        sb.append("Número de puertos escaneados: $numservices\n\n")
+        sb.append("Número de puertos escaneados: $numservices")
+
+        scaninfo.text = sb.toString()
+    }
+
+    fun extraports(doc: Document) {
+        val sb = StringBuilder()
 
         val state = doc.getElementsByTagName("extraports")
             .item(0).attributes.getNamedItem("state").nodeValue
@@ -309,12 +264,16 @@ class AnalisisActivity : AppCompatActivity() {
         ).nodeValue
         val reason = doc.getElementsByTagName("extrareasons")
             .item(0).attributes.getNamedItem("reason").nodeValue
-        sb.append("Informacion de los puertos no escaneados:\n")
         sb.append("Número total de puertos: $numPortNotScan\n")
         sb.append("Estado de los puertos: $state\n")
-        sb.append("Motivo: $reason\n\n")
+        sb.append("Motivo: $reason")
 
-        sb.append("Informacion de los puertos escaneados:\n")
+        extraports.text = sb.toString()
+    }
+
+    fun information_port(doc: Document) {
+        val sb = StringBuilder()
+
         sb.append("PORT    STATE SERVICE\n")
         for (i in 0 until doc.getElementsByTagName("port").length) {
             val protocol = doc.getElementsByTagName("port")
@@ -328,12 +287,18 @@ class AnalisisActivity : AppCompatActivity() {
 
             sb.append("$portid/$protocol  $state  $service\n")
         }
-        sb.append("\n")
+
+        port.text = sb.toString()
+    }
+
+    fun information_finished(doc: Document) {
+        val sb = StringBuilder()
+
         val summary = doc.getElementsByTagName("finished")
             .item(0).attributes.getNamedItem("summary").nodeValue
-        sb.append("Resumen de la ejecución: $summary\n")
+        sb.append(summary)
 
-        return sb.toString()
+        finished.text = sb.toString()
     }
 
     fun getNumPorts(doc: Document): Int {
