@@ -16,6 +16,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Color
 import com.example.lvarolpezfueyo_tfm.R
+import com.example.lvarolpezfueyo_tfm.util.GeneratePDF
 import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -83,6 +84,7 @@ class AnalisisActivity : AppCompatActivity() {
             generatePDF.isEnabled = false
             share.isEnabled = false
             buttonScan.isEnabled = false
+            checkBox.isEnabled = false
 
             val ip = editTextIp.text.toString()
 
@@ -99,7 +101,9 @@ class AnalisisActivity : AppCompatActivity() {
         share = findViewById(R.id.Share);
 
         generatePDF.setOnClickListener {
-            generatePdf()
+            val generatePDF = GeneratePDF(this) // "this" se refiere al contexto de la actividad actual
+            val text = "Hola, mundo!"
+            generatePDF.createAndSharePdf(text)
         }
 
         share.setOnClickListener {
@@ -167,6 +171,7 @@ class AnalisisActivity : AppCompatActivity() {
                                     generatePDF.isEnabled = true
                                     share.isEnabled = true
                                     buttonScan.isEnabled = true
+                                    checkBox.isEnabled = true
                                 }
 
                             } else {
@@ -184,15 +189,36 @@ class AnalisisActivity : AppCompatActivity() {
     }
 
 
-    fun generatePdf() {
-
-    }
-
     private fun shareText() {
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "text/plain"
-        intent.putExtra(Intent.EXTRA_TEXT, textViewResult.text.toString())
+        intent.putExtra(Intent.EXTRA_TEXT, textToShare())
         startActivity(Intent.createChooser(intent, "Compartir con:"))
+    }
+
+    fun textToShare(): String{
+        val sb = StringBuilder()
+        sb.append("Este es el resumen del escaneo\n\n")
+
+        sb.append("Información general:\n")
+        sb.append(generalInformation.text).append("\n\n")
+
+        sb.append("Hora de inicio del escaneo:\n")
+        sb.append(startTime.text).append("\n\n")
+
+        sb.append("Información del escaneo:\n")
+        sb.append(scaninfo.text).append("\n\n")
+
+        sb.append("Información de los puertos no escaneados:\n")
+        sb.append(extraports.text).append("\n\n")
+
+        sb.append("Información de los puertos escaneados:\n")
+        sb.append(port.text).append("\n\n")
+
+        sb.append("Resumen ejecución:\n")
+        sb.append(finished.text).append("\n\n")
+
+        return sb.toString()
     }
 
 
@@ -226,7 +252,7 @@ class AnalisisActivity : AppCompatActivity() {
 
         sb.append("IP: ${editTextIp.text}\n")
         sb.append("Número de puertos abiertos: $numOpenPorts")
-        if (checkBox.isChecked){
+        if (checkBox.isChecked) {
             val os = doc.getElementsByTagName("osmatch")
                 .item(0).attributes.getNamedItem("name").nodeValue
             val accuracy = doc.getElementsByTagName("osmatch")
@@ -284,6 +310,11 @@ class AnalisisActivity : AppCompatActivity() {
 
         portLinearLayout.orientation = LinearLayout.VERTICAL
 
+        val sb = StringBuilder()
+
+        sb.append("PORT STATE SERVICE\n")
+
+
         for (i in 0 until doc.getElementsByTagName("port").length) {
             val protocol = doc.getElementsByTagName("port")
                 .item(i).attributes.getNamedItem("protocol").nodeValue
@@ -293,6 +324,8 @@ class AnalisisActivity : AppCompatActivity() {
                 doc.getElementsByTagName("state").item(i).attributes.getNamedItem("state").nodeValue
             val service = doc.getElementsByTagName("service")
                 .item(0).attributes.getNamedItem("name").nodeValue
+
+            sb.append("$portid/$protocol $state $service\n")
 
             val button = Button(this)
             button.setTextColor(Color.BLACK)
@@ -304,7 +337,7 @@ class AnalisisActivity : AppCompatActivity() {
                 startNiktoActivity(portId.toInt()) // Pasar el portId a la actividad
             }
 
-
+            port.text = sb.toString()
             portLinearLayout.addView(button)
         }
     }
