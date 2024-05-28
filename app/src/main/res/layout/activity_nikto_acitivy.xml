@@ -70,7 +70,7 @@
                     android:textColor="@color/white"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Este espacio mostrará la salida de nikto una vez haya finalizado el escaneo. El tiempo máximo de escaneo es de 2 minutos, todo escaneo que supere este tiempo no se realizará y se avisará mediante un mensaje"
+                    android:text="Este espacio mostrará la salida de nikto una vez haya finalizado el escaneo. El tiempo máximo de espera es de 2 minutos, todo escaneo que supere este tiempo no se realizará y se avisará mediante un mensaje"
                     android:padding="8dp"
                     >
                 </TextView>

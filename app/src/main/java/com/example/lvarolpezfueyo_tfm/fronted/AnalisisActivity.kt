@@ -2,21 +2,19 @@ package com.example.lvarolpezfueyo_tfm.fronted
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.TextPaint
-import android.text.style.ClickableSpan
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import android.graphics.Color
 import com.example.lvarolpezfueyo_tfm.R
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -32,6 +30,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 class AnalisisActivity : AppCompatActivity() {
 
     private lateinit var scrollView: ScrollView
+    private lateinit var portLinearLayout: LinearLayout
 
     private lateinit var generalInformation: TextView
     private lateinit var startTime: TextView
@@ -72,6 +71,7 @@ class AnalisisActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
 
         scrollView = findViewById(R.id.scrollView)
+        portLinearLayout = findViewById(R.id.portLinearLayout)
 
         startTime = findViewById(R.id.startTime)
         scaninfo = findViewById(R.id.scaninfo)
@@ -82,14 +82,15 @@ class AnalisisActivity : AppCompatActivity() {
         buttonScan.setOnClickListener {
             generatePDF.isEnabled = false
             share.isEnabled = false
-
-            textViewResult.text = "Escaneando, los resultados aparecerán una vez finalice";
+            buttonScan.isEnabled = false
 
             val ip = editTextIp.text.toString()
 
             if (!niktoResult.values.any { it.first == ip }) {
                 niktoResult.clear()
             }
+
+            portLinearLayout.removeAllViews();
 
             scanPorts(ip)
         }
@@ -154,7 +155,7 @@ class AnalisisActivity : AppCompatActivity() {
                                 val numOpenPorts = getNumPorts(xml)
 
                                 this@AnalisisActivity.runOnUiThread {
-                                    generalInformation(numOpenPorts)
+                                    generalInformation(numOpenPorts, xml)
                                     startTime(xml)
                                     scaninfo(xml)
                                     extraports(xml)
@@ -165,6 +166,7 @@ class AnalisisActivity : AppCompatActivity() {
                                     textViewResult.visibility = View.GONE
                                     generatePDF.isEnabled = true
                                     share.isEnabled = true
+                                    buttonScan.isEnabled = true
                                 }
 
                             } else {
@@ -219,11 +221,18 @@ class AnalisisActivity : AppCompatActivity() {
         return builder.parse(xmlContent.byteInputStream(StandardCharsets.UTF_8))
     }
 
-    fun generalInformation(numOpenPorts: Int) {
+    fun generalInformation(numOpenPorts: Int, doc: Document) {
         val sb = StringBuilder()
 
         sb.append("IP: ${editTextIp.text}\n")
         sb.append("Número de puertos abiertos: $numOpenPorts")
+        if (checkBox.isChecked){
+            val os = doc.getElementsByTagName("osmatch")
+                .item(0).attributes.getNamedItem("name").nodeValue
+            val accuracy = doc.getElementsByTagName("osmatch")
+                .item(0).attributes.getNamedItem("accuracy").nodeValue
+            sb.append("\nSistema operativo: $os con una precisión de $accuracy%")
+        }
 
         generalInformation.text = sb.toString();
     }
@@ -272,9 +281,9 @@ class AnalisisActivity : AppCompatActivity() {
     }
 
     fun information_port(doc: Document) {
-        val sb = StringBuilder()
 
-        sb.append("PORT    STATE SERVICE\n")
+        portLinearLayout.orientation = LinearLayout.VERTICAL
+
         for (i in 0 until doc.getElementsByTagName("port").length) {
             val protocol = doc.getElementsByTagName("port")
                 .item(i).attributes.getNamedItem("protocol").nodeValue
@@ -285,11 +294,21 @@ class AnalisisActivity : AppCompatActivity() {
             val service = doc.getElementsByTagName("service")
                 .item(0).attributes.getNamedItem("name").nodeValue
 
-            sb.append("$portid/$protocol  $state  $service\n")
-        }
+            val button = Button(this)
+            button.setTextColor(Color.BLACK)
+            button.text = "$portid/$protocol  $state  $service"
 
-        port.text = sb.toString()
+            button.tag = portid // Asignar el portId como tag del botón
+            button.setOnClickListener {
+                val portId = button.tag as String // Recuperar el portId del tag
+                startNiktoActivity(portId.toInt()) // Pasar el portId a la actividad
+            }
+
+
+            portLinearLayout.addView(button)
+        }
     }
+
 
     fun information_finished(doc: Document) {
         val sb = StringBuilder()

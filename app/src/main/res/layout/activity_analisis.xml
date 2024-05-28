@@ -82,7 +82,8 @@
                         android:textColor="@color/white"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="8dp"/>
+                        android:padding="8dp"
+                        android:lineSpacingMultiplier="1.2" />
 
 
                 </LinearLayout>
@@ -109,7 +110,8 @@
                         android:textColor="@color/white"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="8dp"/>
+                        android:padding="8dp"
+                        android:lineSpacingMultiplier="1.2" />
 
                 </LinearLayout>
 
@@ -135,7 +137,8 @@
                         android:textColor="@color/white"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="8dp"/>
+                        android:padding="8dp"
+                        android:lineSpacingMultiplier="1.2" />
 
 
                 </LinearLayout>
@@ -162,7 +165,8 @@
                         android:textColor="@color/white"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="8dp"/>
+                        android:padding="8dp"
+                        android:lineSpacingMultiplier="1.2" />
 
 
                 </LinearLayout>
@@ -180,17 +184,26 @@
 
 
                 <LinearLayout
+                    android:id="@+id/portLinearLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:background="@drawable/border">
+                    android:background="@drawable/border"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
 
                     <TextView
                         android:id="@+id/port"
                         android:textColor="@color/white"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="8dp"/>
+                        android:gravity="center_horizontal"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="8dp"
+                        android:lineSpacingMultiplier="1.2" />
+
 
 
                 </LinearLayout>
@@ -217,7 +230,8 @@
                         android:textColor="@color/white"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="8dp"/>
+                        android:padding="8dp"
+                        android:lineSpacingMultiplier="1.2" />
 
 
                 </LinearLayout>
@@ -296,9 +310,6 @@
                 android:text="Realizar escaneo"
                 android:background="@drawable/boton_redondo">
             </Button>
-
-
-
 
             <LinearLayout
                 android:layout_width="match_parent"
