@@ -16,7 +16,7 @@ import java.io.IOException
 class GeneratePDF(val context: Context) {
 
     @Throws(IOException::class)
-    fun createAndSharePdf(text: String?) {
+    fun createPDF(text: String?): File {
         val pdfFile = File.createTempFile("scan", ".pdf")
         FileOutputStream(pdfFile).use { fileOutputStream ->
             PdfWriter(fileOutputStream).use { pdfWriter ->
@@ -28,17 +28,9 @@ class GeneratePDF(val context: Context) {
                 }
             }
         }
-        sharePdf(pdfFile)
+        return pdfFile
     }
 
-    private fun sharePdf(pdfFile: File) {
-        val shareIntent = Intent()
-        shareIntent.action = Intent.ACTION_SEND
-        shareIntent.putExtra(
-            Intent.EXTRA_STREAM,
-            FileProvider.getUriForFile(context, context.packageName + ".provider", pdfFile)
-        )
-        shareIntent.type = "application/pdf"
-        context.startActivity(Intent.createChooser(shareIntent, "Compartir archivo PDF"))
-    }
+
+
 }

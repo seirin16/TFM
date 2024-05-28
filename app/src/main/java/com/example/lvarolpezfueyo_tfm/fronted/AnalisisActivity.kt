@@ -15,12 +15,14 @@ import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Color
+import androidx.core.content.FileProvider
 import com.example.lvarolpezfueyo_tfm.R
 import com.example.lvarolpezfueyo_tfm.util.GeneratePDF
 import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.w3c.dom.Document
+import java.io.File
 import java.io.IOException
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets
@@ -103,7 +105,10 @@ class AnalisisActivity : AppCompatActivity() {
         generatePDF.setOnClickListener {
             val generatePDF = GeneratePDF(this) // "this" se refiere al contexto de la actividad actual
             val text = "Hola, mundo!"
-            generatePDF.createAndSharePdf(text)
+           // val pdf = generatePDF.createPDF(textToShare())
+            val pdf = generatePDF.createPDF(text)
+
+            sharePdf(pdf)
         }
 
         share.setOnClickListener {
@@ -193,6 +198,13 @@ class AnalisisActivity : AppCompatActivity() {
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "text/plain"
         intent.putExtra(Intent.EXTRA_TEXT, textToShare())
+        startActivity(Intent.createChooser(intent, "Compartir con:"))
+    }
+
+    private fun sharePdf(pdfFile: File) {
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "application/pdf"
+        intent.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(this, "com.example.lvarolpezfueyo_tfm.provider", pdfFile))
         startActivity(Intent.createChooser(intent, "Compartir con:"))
     }
 
