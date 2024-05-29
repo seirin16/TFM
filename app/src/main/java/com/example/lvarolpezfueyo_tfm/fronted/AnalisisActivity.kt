@@ -103,9 +103,10 @@ class AnalisisActivity : AppCompatActivity() {
         share = findViewById(R.id.Share);
 
         generatePDF.setOnClickListener {
-            val generatePDF = GeneratePDF(this) // "this" se refiere al contexto de la actividad actual
+            val generatePDF =
+                GeneratePDF()
             val text = "Hola, mundo!"
-           // val pdf = generatePDF.createPDF(textToShare())
+            // val pdf = generatePDF.createPDF(textToShare())
             val pdf = generatePDF.createPDF(text)
 
             sharePdf(pdf)
@@ -115,8 +116,14 @@ class AnalisisActivity : AppCompatActivity() {
             shareText()
         }
 
+
     }
 
+    /**
+     * Función que realiza un escaneo de puertos en una dirección IP específica.
+     *
+     * @param ip Dirección IP a escanear.
+     */
     private fun scanPorts(ip: String) {
         // Verifica si la dirección IP es válida
         if (!isValidIP(ip)) {
@@ -193,7 +200,9 @@ class AnalisisActivity : AppCompatActivity() {
         }
     }
 
-
+    /**
+     * Función que comparte el texto del resumen del escaneo.
+     */
     private fun shareText() {
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "text/plain"
@@ -201,14 +210,28 @@ class AnalisisActivity : AppCompatActivity() {
         startActivity(Intent.createChooser(intent, "Compartir con:"))
     }
 
+    /**
+     * Función que comparte un archivo PDF.
+     *
+     * @param pdfFile El archivo PDF a compartir.
+     */
     private fun sharePdf(pdfFile: File) {
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "application/pdf"
-        intent.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(this, "com.example.lvarolpezfueyo_tfm.provider", pdfFile))
+        intent.putExtra(
+            Intent.EXTRA_STREAM,
+            FileProvider.getUriForFile(this, "com.example.lvarolpezfueyo_tfm.provider", pdfFile)
+        )
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         startActivity(Intent.createChooser(intent, "Compartir con:"))
     }
 
-    fun textToShare(): String{
+    /**
+     * Función que genera el texto del resumen del escaneo.
+     *
+     * @return El texto del resumen del escaneo.
+     */
+    fun textToShare(): String {
         val sb = StringBuilder()
         sb.append("Este es el resumen del escaneo\n\n")
 
@@ -233,7 +256,12 @@ class AnalisisActivity : AppCompatActivity() {
         return sb.toString()
     }
 
-
+    /**
+     * Función que comprueba si una cadena de texto representa una dirección IP válida.
+     *
+     * @param ip La cadena de texto a comprobar.
+     * @return `true` si la cadena de texto representa una dirección IP válida, `false` en caso contrario.
+     */
     private fun isValidIP(ip: String): Boolean {
         return try {
             InetAddress.getByName(ip)
@@ -243,6 +271,11 @@ class AnalisisActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Función que inicia la actividad NiktoActivity con la información del puerto seleccionado.
+     *
+     * @param clickablePort El número de puerto seleccionado.
+     */
     private fun startNiktoActivity(clickablePort: Int) {
         val intent = Intent(this@AnalisisActivity, NiktoAcitivy::class.java)
         intent.putExtra("ip", editTextIp.text.toString())
@@ -251,7 +284,12 @@ class AnalisisActivity : AppCompatActivity() {
         resultLauncher.launch(intent)
     }
 
-
+    /**
+     * Función que parsea una cadena de texto XML y devuelve un objeto Document que la representa.
+     *
+     * @param xmlContent La cadena de texto XML a parsear.
+     * @return El objeto Document que representa la cadena de texto XML.
+     */
     fun parseXml(xmlContent: String): Document {
         val factory = DocumentBuilderFactory.newInstance()
         val builder = factory.newDocumentBuilder()
@@ -259,6 +297,12 @@ class AnalisisActivity : AppCompatActivity() {
         return builder.parse(xmlContent.byteInputStream(StandardCharsets.UTF_8))
     }
 
+    /**
+     * Función que muestra la información general del escaneo en la interfaz de usuario.
+     *
+     * @param numOpenPorts El número de puertos abiertos encontrados en el escaneo.
+     * @param doc El objeto Document que representa el resultado del escaneo en formato XML.
+     */
     fun generalInformation(numOpenPorts: Int, doc: Document) {
         val sb = StringBuilder()
 
@@ -275,6 +319,11 @@ class AnalisisActivity : AppCompatActivity() {
         generalInformation.text = sb.toString();
     }
 
+    /**
+     * Función que obtiene y muestra la hora de inicio de un escaneo en un documento XML.
+     *
+     * @param doc El documento XML a partir del cual se obtendrá la hora de inicio.
+     */
     fun startTime(doc: Document) {
         val sb = StringBuilder()
         val startstr = doc.getElementsByTagName("nmaprun")
@@ -285,6 +334,11 @@ class AnalisisActivity : AppCompatActivity() {
         startTime.text = sb.toString();
     }
 
+    /**
+     * Función que obtiene y muestra la información de escaneo de un documento XML.
+     *
+     * @param doc El documento XML a partir del cual se obtendrá la información de escaneo.
+     */
     fun scaninfo(doc: Document) {
         val sb = StringBuilder()
 
@@ -301,6 +355,11 @@ class AnalisisActivity : AppCompatActivity() {
         scaninfo.text = sb.toString()
     }
 
+    /**
+     * Función que obtiene y muestra la información de puertos adicionales de un documento XML.
+     *
+     * @param doc El documento XML a partir del cual se obtendrá la información de puertos adicionales.
+     */
     fun extraports(doc: Document) {
         val sb = StringBuilder()
 
@@ -318,6 +377,11 @@ class AnalisisActivity : AppCompatActivity() {
         extraports.text = sb.toString()
     }
 
+    /**
+     * Función que obtiene y muestra la información de los puertos de un documento XML.
+     *
+     * @param doc El documento XML a partir del cual se obtendrá la información de los puertos.
+     */
     fun information_port(doc: Document) {
 
         portLinearLayout.orientation = LinearLayout.VERTICAL
@@ -354,7 +418,11 @@ class AnalisisActivity : AppCompatActivity() {
         }
     }
 
-
+    /**
+     * Función que obtiene y muestra la información de finalización de un documento XML.
+     *
+     * @param doc El documento XML a partir del cual se obtendrá la información de finalización.
+     */
     fun information_finished(doc: Document) {
         val sb = StringBuilder()
 
@@ -365,11 +433,15 @@ class AnalisisActivity : AppCompatActivity() {
         finished.text = sb.toString()
     }
 
+    /**
+     * Función que obtiene el número de puertos de un documento XML.
+     *
+     * @param doc El documento XML a partir del cual se obtendrán los puertos.
+     * @return El número de elementos "port" en el documento XML.
+     */
     fun getNumPorts(doc: Document): Int {
-
         return doc.getElementsByTagName("port").length
     }
-
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {

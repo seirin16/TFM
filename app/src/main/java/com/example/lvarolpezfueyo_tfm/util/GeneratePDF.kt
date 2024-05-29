@@ -13,8 +13,15 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
-class GeneratePDF(val context: Context) {
+class GeneratePDF() {
 
+    /**
+     * Crea un archivo PDF a partir de un texto dado y lo guarda en el almacenamiento temporal del dispositivo.
+     *
+     * @param text El texto a incluir en el archivo PDF.
+     * @return El archivo PDF creado.
+     * @throws IOException Si ocurre un error al escribir en el archivo.
+     */
     @Throws(IOException::class)
     fun createPDF(text: String?): File {
         val pdfFile = File.createTempFile("scan", ".pdf")

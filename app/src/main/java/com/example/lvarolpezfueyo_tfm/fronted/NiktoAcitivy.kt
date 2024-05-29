@@ -55,8 +55,13 @@ class NiktoAcitivy : AppCompatActivity() {
 
         }
 
-    }
 
+    }
+    /**
+     * Función que realiza un escaneo de puertos en una dirección IP específica.
+     *
+     * @param ip Dirección IP a escanear.
+     */
     private fun scanPort(ip: String, port: Int) {
 
         val client = OkHttpClient.Builder()
@@ -109,6 +114,12 @@ class NiktoAcitivy : AppCompatActivity() {
 
     }
 
+    /**
+     * Este método se llama cuando el usuario presiona el botón de retroceso del dispositivo.
+     * Si la variable `sendInformation` es verdadera, se envía información adicional al
+     * Activity anterior a través de un Intent y se establece el resultado como RESULT_OK.
+     * Luego, se llama al método super.onBackPressed() para finalizar el Activity actual.
+     */
     override fun onBackPressed() {
         if (sendInformation) {
             intent.putExtra("ip", ip)
