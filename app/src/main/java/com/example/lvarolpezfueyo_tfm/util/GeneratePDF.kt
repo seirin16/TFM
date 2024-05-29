@@ -2,8 +2,7 @@ package com.example.lvarolpezfueyo_tfm.util
 
 
 import android.content.Context
-import android.content.Intent
-import androidx.core.content.FileProvider
+import android.net.Uri
 import com.itextpdf.kernel.geom.PageSize
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfWriter
@@ -12,6 +11,8 @@ import com.itextpdf.layout.element.Paragraph
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.security.AccessController.getContext
+
 
 class GeneratePDF() {
 
@@ -23,8 +24,11 @@ class GeneratePDF() {
      * @throws IOException Si ocurre un error al escribir en el archivo.
      */
     @Throws(IOException::class)
-    fun createPDF(text: String?): File {
-        val pdfFile = File.createTempFile("scan", ".pdf")
+    fun createPDF(context: Context, name: String, text: String?): File {
+        val imagePath: File = File(context.filesDir, "pdfs")
+        imagePath.mkdir()
+        val pdfFile = File(imagePath, "$name.pdf")
+
         FileOutputStream(pdfFile).use { fileOutputStream ->
             PdfWriter(fileOutputStream).use { pdfWriter ->
                 PdfDocument(pdfWriter).use { pdfDocument ->

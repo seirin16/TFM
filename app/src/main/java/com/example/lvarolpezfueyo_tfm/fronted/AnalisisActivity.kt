@@ -82,32 +82,33 @@ class AnalisisActivity : AppCompatActivity() {
         port = findViewById(R.id.port)
         finished = findViewById(R.id.finished)
 
-        buttonScan.setOnClickListener {
-            generatePDF.isEnabled = false
-            share.isEnabled = false
-            buttonScan.isEnabled = false
-            checkBox.isEnabled = false
-
-            val ip = editTextIp.text.toString()
-
-            if (!niktoResult.values.any { it.first == ip }) {
-                niktoResult.clear()
-            }
-
-            portLinearLayout.removeAllViews();
-
-            scanPorts(ip)
-        }
-
         generatePDF = findViewById(R.id.PDF);
         share = findViewById(R.id.Share);
+
+        generatePDF.isEnabled = false
+        share.isEnabled = false
+
+        buttonScan.setOnClickListener {
+            if(editTextIp.text.toString().isNotEmpty()){
+                generatePDF.isEnabled = false
+                share.isEnabled = false
+                buttonScan.isEnabled = false
+                checkBox.isEnabled = false
+                val ip = editTextIp.text.toString()
+                if (!niktoResult.values.any { it.first == ip }) {
+                    niktoResult.clear()
+                }
+                portLinearLayout.removeAllViews();
+                scanPorts(ip)
+            }
+        }
 
         generatePDF.setOnClickListener {
             val generatePDF =
                 GeneratePDF()
-            val text = "Hola, mundo!"
-            // val pdf = generatePDF.createPDF(textToShare())
-            val pdf = generatePDF.createPDF(text)
+            val name = editTextIp.text.toString()
+            val text = textToShare()
+            val pdf = generatePDF.createPDF(this, name, text)
 
             sharePdf(pdf)
         }
@@ -128,6 +129,12 @@ class AnalisisActivity : AppCompatActivity() {
         // Verifica si la dirección IP es válida
         if (!isValidIP(ip)) {
             textViewResult.text = "Dirección IP no válida"
+            scrollView.visibility = View.INVISIBLE
+            progressBar.visibility = View.GONE
+            textViewResult.visibility = View.VISIBLE
+            checkBox.isEnabled = true
+            buttonScan.isEnabled = true
+
             return
         } else {
             progressBar.visibility = View.VISIBLE
@@ -156,6 +163,8 @@ class AnalisisActivity : AppCompatActivity() {
                     e.printStackTrace()
                     this@AnalisisActivity.runOnUiThread {
                         progressBar.visibility = View.GONE
+                        checkBox.isEnabled = true
+                        buttonScan.isEnabled = true
                         textViewResult.text = "Error: ${e.message}"
                     }
                 }
@@ -220,7 +229,7 @@ class AnalisisActivity : AppCompatActivity() {
         intent.type = "application/pdf"
         intent.putExtra(
             Intent.EXTRA_STREAM,
-            FileProvider.getUriForFile(this, "com.example.lvarolpezfueyo_tfm.provider", pdfFile)
+            FileProvider.getUriForFile(this, "com.example.lvarolpezfueyo_tfm.fileprovider", pdfFile)
         )
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         startActivity(Intent.createChooser(intent, "Compartir con:"))
@@ -310,10 +319,19 @@ class AnalisisActivity : AppCompatActivity() {
         sb.append("Número de puertos abiertos: $numOpenPorts")
         if (checkBox.isChecked) {
             val os = doc.getElementsByTagName("osmatch")
-                .item(0).attributes.getNamedItem("name").nodeValue
+                .item(0)?.attributes?.getNamedItem("name")?.nodeValue
+                ?: "Unknown OS"
             val accuracy = doc.getElementsByTagName("osmatch")
-                .item(0).attributes.getNamedItem("accuracy").nodeValue
-            sb.append("\nSistema operativo: $os con una precisión de $accuracy%")
+                .item(0)?.attributes?.getNamedItem("accuracy")?.nodeValue
+                ?.toIntOrNull()
+                ?.let { if (it < 0) 0 else it } // ensure accuracy is not negative
+                ?: 0
+
+            if (os == "Unknown OS") {
+                sb.append("\nSistema operativo:$os")
+            } else {
+                sb.append("\nSistema operativo: $os con una precisión del $accuracy%")
+            }
         }
 
         generalInformation.text = sb.toString();
